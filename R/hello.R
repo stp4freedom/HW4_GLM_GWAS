@@ -14,5 +14,5 @@
 #   Test Package:              'Ctrl + Shift + T'
 
 hello <- function() {
-  print("Lance can you read this -Sam")
+  print("Lance can you read this-Sam")
 }
