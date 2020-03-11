@@ -21,3 +21,8 @@ math<-function(x,y){
   z=x+y
   return(z)
 }
+
+math2<-function(x,y,y1){
+  z=x+y+y1
+  return(z)
+}
