@@ -16,3 +16,8 @@
 hello <- function() {
   print("Lance can you read this-Sam")
 }
+
+math<-function(x,y){
+  z=x+y
+  return(z)
+}
