@@ -2,7 +2,7 @@
 % Please edit documentation in R/helloroxygenize.R
 \name{math2}
 \alias{math2}
-\title{Add together two numbers}
+\title{Add together three numbers}
 \usage{
 math2(x, y, y1)
 }
@@ -14,8 +14,8 @@ math2(x, y, y1)
 \item{y1}{a third number}
 }
 \value{
-The sum of all there numbers
+The sum of all three numbers
 }
 \description{
-Add together two numbers
+Add together three numbers
 }
