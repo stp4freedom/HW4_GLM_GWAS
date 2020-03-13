@@ -1,0 +1,51 @@
+---
+title: "User Manual"
+author: "Lance Merrick & Samuel Prather"
+date: "March 30, 2020"
+output:
+  html_document:
+    df_print: paged
+
+---
+
+<style type="text/css">
+
+h1.title {
+  font-size: 38px;
+  color: black;
+  text-align: center;
+}
+h4.author { /* Header 4 - and the author and data headers use this too  */
+    font-size: 18px;
+  font-family: "Times New Roman", Times, serif;
+  color: DarkRed;
+  text-align: center;
+}
+h4.date { /* Header 4 - and the author and data headers use this too  */
+  font-size: 18px;
+  font-family: "Times New Roman", Times, serif;
+  color: DarkBlue;
+  text-align: center;
+}
+</style>
+
+<!-- test inserting image-->
+
+<center>
+
+![test image of wheat for logo. ](wheatclipart.png){#id .class width=300 height=300px}
+
+</center>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+### **Table of contents**
+### Summary of package
+### Tutorial
+
+
+
+
