@@ -7,7 +7,7 @@
 power.fdr(order.SNP, QTN.position = NULL)
 }
 \arguments{
-\item{order.SNP}{list of SNPs order by ascending p-value}
+\item{order.SNP}{list of SNPs order by ascending  p-value}
 
 \item{QTN.position}{position of QTN if known}
 }

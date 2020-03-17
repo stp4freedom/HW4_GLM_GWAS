@@ -1,9 +1,6 @@
-
-order.SNP = a$order.SNP
-
 #' Function to caculate power, FDR and type-1 error
 #'
-#' @param order.SNP list of SNPs order by ascending p-value
+#' @param order.SNP list of SNPs order by ascending  p-value
 #' @param QTN.position position of QTN if known
 #' @return list of power, FDR and type-1 error
 power.fdr <- function(order.SNP, QTN.position=NULL) {
@@ -21,4 +18,4 @@ power.fdr <- function(order.SNP, QTN.position=NULL) {
   }
   return(list(power=pwr, fdr=fdr, type1error=t1error))
 }
-power.fdr(order.SNP)
+
