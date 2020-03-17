@@ -15,6 +15,11 @@ GM <- read.table("GAPIT_Tutorial_Data/mdp_SNP_information.txt", header = T, stri
 CV <- read.table("CROPS545_Covariates.txt", header = T, stringsAsFactors = F, sep = "\t")
 phenotypes <- read.table("CROPS545_Phenotype.txt", header = T, stringsAsFactors = F, sep = "\t")
 
+library(mgcv)
+library(knitr)
+library(ggplot2)
+library(gridExtra)
+
 #' GWAS with PCA
 #'
 #' @param phenotypes file with numeric phenotypic values
