@@ -15,6 +15,16 @@ GM <- read.table("GAPIT_Tutorial_Data/mdp_SNP_information.txt", header = T, stri
 CV <- read.table("CROPS545_Covariates.txt", header = T, stringsAsFactors = F, sep = "\t")
 phenotypes <- read.table("CROPS545_Phenotype.txt", header = T, stringsAsFactors = F, sep = "\t")
 
+#' GWAS with PCA
+#'
+#' @param phenotypes file with numeric phenotypic values
+#' @param genotypes data.frame with genotype calls coded as 0,1,2.
+#' @param Cov numeric data.frame with covariates values
+#' @param GM genetic map of data with chr and position of each SNP
+#' @param PCA.M number of principal components to use default is 3
+#' @param QTN.position posistion of QTN if applicable
+#' @param cutoff  If cutoff is default, uses Bonferroni; else uses -log(value) of 0.05/number of SNPs
+#' @return Manhatten plot, QQ plot plus p-values, type-1 error and power for every SNP
 GWAStest<- function(phenotypes=NULL, genotypes=NULL, Cov=NULL, GM=NULL, PCA.M=3, QTN.position=NULL, cutoff=NULL){
   print("GWAStest Starting")
   ###check and copy input data
@@ -160,20 +170,3 @@ GWAStest<- function(phenotypes=NULL, genotypes=NULL, Cov=NULL, GM=NULL, PCA.M=3,
 phenotypes_n_1=phenotypes[,2]
 GWAStest(phenotypes_n_1,genotypes,CV,GM,PCA.M = 3)
 
-#type I error
-power.fdr <- function(order.SNP, QTN.position) {
-  pwr <- c()
-  fdr <- c()
-  t1error <- c()
-  NQTN <- length(QTN.position)
-  nsnp <- length(order.SNP)
-  for (m in (1: nsnp)) {
-    detected <- intersect(order.SNP[1:m], QTN.position)
-    falsePositive <- setdiff(order.SNP[1:m], QTN.position)
-    pwr <- c(pwr, length(detected)/NQTN)
-    fdr <- c(fdr, length(falsePositive)/m)
-    t1error <- c(t1error, length(falsePositive)/nsnp)
-  }
-  return(list(power=pwr, fdr=fdr, type1error=t1error))
-}
-power.fdr(order.SNP)
