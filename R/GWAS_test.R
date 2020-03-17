@@ -34,16 +34,16 @@ GWAStest<- function(phenotypes=NULL, genotypes=NULL, Cov=NULL, GM=NULL, PCA.M=3,
   print(knitr::kable(round(PCA_results$importance[,1:10], 2)))
 
   #Variance Explained
-  var_exp_plot_data <- data.frame(t(PCA_results$importance)) # I transposed the data to be in long form and coerce to a data.frame for ggplot
+  var_exp_plot_data <- data.frame(t(PCA_results$importance)) # I transposed the data to be in long form and coerce to a data.frame for ggplot2::ggplot
   names(var_exp_plot_data) <- c("sdev", "var_exp", "cum_var_exp") # rename the columns (because the original rownames has spaces)
   var_exp_plot_data$pca_index <- 1:nrow(var_exp_plot_data) # Add a new column that is the integer index of the component
-  var_exp_plot <- ggplot(data = var_exp_plot_data, aes(x = pca_index, y = var_exp)) +
+  var_exp_plot <- ggplot2::ggplot(data = var_exp_plot_data, aes(x = pca_index, y = var_exp)) +
     geom_line() +
     geom_point() +
     labs(x = "PCA component index", y = "Variance explained", title = "Variance Explained")
 
   #Cumulative Variance Explained
-  cum_var_exp_plot <- ggplot(data = var_exp_plot_data, aes(x = pca_index, y = cum_var_exp)) +
+  cum_var_exp_plot <- ggplot2::ggplot(data = var_exp_plot_data, aes(x = pca_index, y = cum_var_exp)) +
     geom_line() +
     geom_point() +
     labs(x = "PCA component index", y = "Cumulative Variance explained", title = "Cumulative Variance Explained")
@@ -52,13 +52,13 @@ GWAStest<- function(phenotypes=NULL, genotypes=NULL, Cov=NULL, GM=NULL, PCA.M=3,
   # Plotting the first three components
   PCA_plot_data <- data.frame(PCA$x)
   pca_comp_plot_12 <-
-    ggplot(data = PCA_plot_data, aes(x = PC1, y = PC2)) +
+    ggplot2::ggplot(data = PCA_plot_data, aes(x = PC1, y = PC2)) +
     geom_point()
   pca_comp_plot_13 <-
-    ggplot(data = PCA_plot_data, aes(x = PC1, y = PC3)) +
+    ggplot2::ggplot(data = PCA_plot_data, aes(x = PC1, y = PC3)) +
     geom_point()
   pca_comp_plot_23 <-
-    ggplot(data = PCA_plot_data, aes(x = PC2, y = PC3)) +
+    ggplot2::ggplot(data = PCA_plot_data, aes(x = PC2, y = PC3)) +
     geom_point()
   pcap=grid.arrange(pca_comp_plot_12, pca_comp_plot_13, pca_comp_plot_23, nrow = 2, ncol = 2, top = "Principal Components")
   print(pcap)
@@ -77,7 +77,7 @@ GWAStest<- function(phenotypes=NULL, genotypes=NULL, Cov=NULL, GM=NULL, PCA.M=3,
       # IF NO CV INPUT
       if (is.null(CV)){X=cbind(1, PCA$x[,1:PCA.M],x)
       # IF THERE IS CV INPUT
-      }else{fD <- fixDependence(PCA$x[,1:PCA.M], as.matrix(CV))
+      }else{fD <- mgcv::fixDependence(PCA$x[,1:PCA.M], as.matrix(CV))
       # WITH CV INPUT, CONDITION 1: NO DEPENDENCE
       if (is.null(fD)){X=cbind(1, PCA$x[,1:PCA.M],CV, x)
 
@@ -128,7 +128,7 @@ GWAStest<- function(phenotypes=NULL, genotypes=NULL, Cov=NULL, GM=NULL, PCA.M=3,
     marker_map$pvals <- -log10(t(pvals)) # Add pvalues to the data.frame and log10 transform
     SG_pval <- -log10(cutoff)
     marker_map$comb_pos <- marker_map$Chromosome * 1e9 + marker_map$Position
-    manhattan_plot <- ggplot(marker_map, aes(x = 1:nrow(marker_map), y = pvals, color = factor(Chromosome))) +
+    manhattan_plot <- ggplot2::ggplot(marker_map, aes(x = 1:nrow(marker_map), y = pvals, color = factor(Chromosome))) +
       geom_point() +
       geom_vline(xintercept = QTN_index, color = "red") +
       geom_hline(yintercept= SG_pval,color="green")+
@@ -148,7 +148,7 @@ GWAStest<- function(phenotypes=NULL, genotypes=NULL, Cov=NULL, GM=NULL, PCA.M=3,
 
     exp_pval_dist <- -log10(runif(nrow(marker_map), 0, 1)) # Sample random p-values from a uniform distribution between 0 and 1
 
-    qq_plot <- ggplot(marker_map, aes(x = sort(exp_pval_dist),
+    qq_plot <- ggplot2::ggplot(marker_map, aes(x = sort(exp_pval_dist),
                                       y = sort(marker_map$pvals))) +
       geom_point() +
       geom_abline(intercept = 0, slope = 1, color = "red") +
