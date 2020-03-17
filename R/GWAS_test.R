@@ -15,11 +15,6 @@ GM <- read.table("GAPIT_Tutorial_Data/mdp_SNP_information.txt", header = T, stri
 CV <- read.table("CROPS545_Covariates.txt", header = T, stringsAsFactors = F, sep = "\t")
 phenotypes <- read.table("CROPS545_Phenotype.txt", header = T, stringsAsFactors = F, sep = "\t")
 
-library(mgcv)
-library(knitr)
-library(ggplot2)
-library(gridExtra)
-
 #' GWAS with PCA
 #'
 #' @param phenotypes file with numeric phenotypic values
@@ -36,7 +31,7 @@ GWAStest<- function(phenotypes=NULL, genotypes=NULL, Cov=NULL, GM=NULL, PCA.M=3,
   GD=genotypes
   PCA=prcomp(GD)
   PCA_results <- summary(PCA)
-  print(kable(round(PCA_results$importance[,1:10], 2)))
+  print(knitr::kable(round(PCA_results$importance[,1:10], 2)))
 
   #Variance Explained
   var_exp_plot_data <- data.frame(t(PCA_results$importance)) # I transposed the data to be in long form and coerce to a data.frame for ggplot
