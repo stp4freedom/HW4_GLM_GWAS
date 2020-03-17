@@ -1,0 +1,40 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+```{r}
+if (!file.exists("GAPIT_Tutorial_Data.zip"))
+{
+  download.file("http://zzlab.net/GAPIT/GAPIT_Tutorial_Data.zip", destfile = "GAPIT_Tutorial_Data.zip")
+  unzip("GAPIT_Tutorial_Data.zip")
+}
+download.file("http://zzlab.net/GAPIT/data/CROP545_Covariates.txt", destfile = "CROPS545_Covariates.txt")
+download.file("http://zzlab.net/GAPIT/data/CROP545_Phenotype.txt", destfile = "CROPS545_Phenotype.txt")
+# Import the GAPIT demo data genotypes
+gt_scan <- data.frame(read.table("GAPIT_Tutorial_Data/mdp_numeric.txt", header = T, stringsAsFactors = F, sep = "\t", nrows = 1))
+classes <- sapply(gt_scan, class)
+genotypes <- data.frame(read.table("GAPIT_Tutorial_Data/mdp_numeric.txt", header = T, row.names = 1, colClasses = classes, stringsAsFactors = F, sep = "\t"))
+
+GM <- read.table("GAPIT_Tutorial_Data/mdp_SNP_information.txt", header = T, stringsAsFactors = F, sep = "\t")
+CV <- read.table("CROPS545_Covariates.txt", header = T, stringsAsFactors = F, sep = "\t")
+phenotypes <- read.table("CROPS545_Phenotype.txt", header = T, stringsAsFactors = F, sep = "\t")
+
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(mvgc,ggplot2,knitr,gridextra)
+source("Function_qqplot.R")
+source("Function_manhattan_QTN.R")
+source("Function_manhattan.R")
+```
+
+
+```{r, fig.show='hide'}
+phenotypes_n_1=phenotypes[,2]
+test=GWAStest(phenotypes_n_1,genotypes,CV,GM,PCA.M = 3)
+```
+
+
+```{r}
+power.fdr(order.SNP)
+```
+
