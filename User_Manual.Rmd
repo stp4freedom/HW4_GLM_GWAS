@@ -47,5 +47,15 @@ h4.date { /* Header 4 - and the author and data headers use this too  */
 ### Tutorial
 
 
+First install 
+```{r}
+source("R/GWAS_test.r")
+
+library(mgcv)
+library(knitr)
+library(ggplot2)
+library(gridExtra)
+```
+
 
 
