@@ -20,21 +20,32 @@ GM <- read.table("GAPIT_Tutorial_Data/mdp_SNP_information.txt", header = T, stri
 CV <- read.table("CROPS545_Covariates.txt", header = T, stringsAsFactors = F, sep = "\t")
 phenotypes <- read.table("CROPS545_Phenotype.txt", header = T, stringsAsFactors = F, sep = "\t")
 
+
+#Load dependencies
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load(mvgc,ggplot2,knitr,gridextra)
-source("Function_qqplot.R")
-source("Function_manhattan_QTN.R")
-source("Function_manhattan.R")
+source("R/Function_qqplot.R")
+source("R/Function_manhattan_QTN.R")
+source("R/Function_manhattan.R")
+source("R/FUNCTION_powerFDRtype1error.R")
+```
+
+#Demo with QTN
+```{r, fig.show='hide'}
+#Create QTNs
+n=nrow(genotypes)
+m=ncol(genotypes)
+NQTN=10
+#Show the positions of the QTN
+QTN.position=sample(m,NQTN,replace=F)
+phenotypes_n_1=phenotypes[,2]
+test=GWAStest(phenotypes_n_1,genotypes,CV,GM,PCA.M = 3,QTN.position)
 ```
 
 
+#Demo with QTN
 ```{r, fig.show='hide'}
 phenotypes_n_1=phenotypes[,2]
 test=GWAStest(phenotypes_n_1,genotypes,CV,GM,PCA.M = 3)
-```
-
-
-```{r}
-power.fdr(order.SNP)
 ```
 

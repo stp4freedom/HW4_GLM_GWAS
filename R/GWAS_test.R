@@ -1,20 +1,4 @@
 
-if (!file.exists("GAPIT_Tutorial_Data.zip"))
-{
-  download.file("http://zzlab.net/GAPIT/GAPIT_Tutorial_Data.zip", destfile = "GAPIT_Tutorial_Data.zip")
-  unzip("GAPIT_Tutorial_Data.zip")
-}
-download.file("http://zzlab.net/GAPIT/data/CROP545_Covariates.txt", destfile = "CROPS545_Covariates.txt")
-download.file("http://zzlab.net/GAPIT/data/CROP545_Phenotype.txt", destfile = "CROPS545_Phenotype.txt")
-# Import the GAPIT demo data genotypes
-gt_scan <- data.frame(read.table("GAPIT_Tutorial_Data/mdp_numeric.txt", header = T, stringsAsFactors = F, sep = "\t", nrows = 1))
-classes <- sapply(gt_scan, class)
-genotypes <- data.frame(read.table("GAPIT_Tutorial_Data/mdp_numeric.txt", header = T, row.names = 1, colClasses = classes, stringsAsFactors = F, sep = "\t"))
-
-GM <- read.table("GAPIT_Tutorial_Data/mdp_SNP_information.txt", header = T, stringsAsFactors = F, sep = "\t")
-CV <- read.table("CROPS545_Covariates.txt", header = T, stringsAsFactors = F, sep = "\t")
-phenotypes <- read.table("CROPS545_Phenotype.txt", header = T, stringsAsFactors = F, sep = "\t")
-
 #' GWAS with PCA
 #'
 #' @param phenotypes file with numeric phenotypic values
@@ -30,6 +14,7 @@ GWAStest<- function(phenotypes=NULL, genotypes=NULL, Cov=NULL, GM=NULL, PCA.M=3,
   ###check and copy input data
   GD=genotypes
   PCA=prcomp(GD)
+  print("Principal Components have been calculated Successfully")
   PCA_results <- summary(PCA)
   print(kable(round(PCA_results$importance[,1:10], 2)))
 
@@ -47,8 +32,8 @@ GWAStest<- function(phenotypes=NULL, genotypes=NULL, Cov=NULL, GM=NULL, PCA.M=3,
     geom_line() +
     geom_point() +
     labs(x = "PCA component index", y = "Cumulative Variance explained", title = "Cumulative Variance Explained")
-  pcav=grid.arrange(var_exp_plot, cum_var_exp_plot, nrow = 1, ncol = 2, top = "Variance of Principal Components")
-  print(pcav)
+  grid.arrange(var_exp_plot, cum_var_exp_plot, nrow = 1, ncol = 2, top = "Variance of Principal Components")
+  #normal_print(pcav)
   # Plotting the first three components
   PCA_plot_data <- data.frame(PCA$x)
   pca_comp_plot_12 <-
@@ -60,8 +45,8 @@ GWAStest<- function(phenotypes=NULL, genotypes=NULL, Cov=NULL, GM=NULL, PCA.M=3,
   pca_comp_plot_23 <-
     ggplot(data = PCA_plot_data, aes(x = PC2, y = PC3)) +
     geom_point()
-  pcap=grid.arrange(pca_comp_plot_12, pca_comp_plot_13, pca_comp_plot_23, nrow = 2, ncol = 2, top = "Principal Components")
-  print(pcap)
+  grid.arrange(pca_comp_plot_12, pca_comp_plot_13, pca_comp_plot_23, nrow = 2, ncol = 2, top = "Principal Components")
+  print("Principal Components plots have been printed Successfully")
   n=nrow(GD)
   m=ncol(GD)
   CV=Cov[,-1]
@@ -110,63 +95,50 @@ GWAStest<- function(phenotypes=NULL, genotypes=NULL, Cov=NULL, GM=NULL, PCA.M=3,
     0.05/m,
     cutoff
   ))
+  print(paste0("The final cuttoff for a significance p-value is ",as.character(cutoff.final)))
   sig.SNP <- order.SNP[sort(P.value)<=cutoff.final]
+  lsnp=length(sig.SNP)
+  print(paste0(as.character(lsnp), " Significant SNPs were found"))
 
-  ###power.fdr.type1error calculation
-  power.fdr.type1error=NULL
-  if (!is.null(QTN.position)){
-    power.fdr.type1error=power.fdr(order.SNP, QTN.position)
-  }
   ###
   zeros=P==0
   P[zeros]=1e-20
   P=data.frame(P)
   ###Generate Manhattan plot
-  #color.vector <- rep(c("deepskyblue","orange","forestgreen","indianred3"),10)
-  manhattan_plot <- function(marker_map, pvals,cutoff,QTN_index = c(), trait = "unknown")
-  {
-    marker_map$pvals <- -log10(t(pvals)) # Add pvalues to the data.frame and log10 transform
-    SG_pval <- -log10(cutoff)
-    marker_map$comb_pos <- marker_map$Chromosome * 1e9 + marker_map$Position
-    manhattan_plot <- ggplot(marker_map, aes(x = 1:nrow(marker_map), y = pvals, color = factor(Chromosome))) +
-      geom_point() +
-      geom_vline(xintercept = QTN_index, color = "red") +
-      geom_hline(yintercept= SG_pval,color="green")+
-      labs(title = paste("GWAS manhattan plot for GWAStest:", trait),
-           y = "-log10(p-value)",
-           x = "Marker Position",
-           color = "Chromosome")
+  if (is.null(QTN.position)){
 
-    return(manhattan_plot)
-  }
   mp=manhattan_plot(GM,P,cutoff.final)
   knit_print(mp)
-  ###Generate QQ plot
-  qq_plot <- function(marker_map, pvals, QTN_index= c(), trait = "unknown")
-  {
-    marker_map$pvals <- -log10(t(pvals)) # Add pvalues to the data.frame and log10 transform
+  print("Manhattan Plot Printed without QTN")
 
-    exp_pval_dist <- -log10(runif(nrow(marker_map), 0, 1)) # Sample random p-values from a uniform distribution between 0 and 1
-
-    qq_plot <- ggplot(marker_map, aes(x = sort(exp_pval_dist),
-                                      y = sort(marker_map$pvals))) +
-      geom_point() +
-      geom_abline(intercept = 0, slope = 1, color = "red") +
-      labs(title = "Q-Q Plot for GWAStest",
-           x = "-log10(p-values) Expected",
-           y = "-log10(p-values) Observed")
-
-    return(qq_plot)
+  # WITH CV INPUT, CONDITION 2: WITH DEPENDENCE
+  }else {
+    ###power.fdr.type1error calculation
+    power.fdr.type1error=NULL
+    if (!is.null(QTN.position)){
+      power.fdr.type1error=power.fdr(order.SNP, QTN.position)
+    }
+    detected=intersect(sig.SNP,QTN.position)
+    if(length(detected)==0){detected=NULL}
+    falsePositive=setdiff(sig.SNP, QTN.position)
+    print(paste0("QTN's detected with ",as.character(length(detected))," True Positives and ",as.character(length(falsePositive))," False Positives."))
+  mp=manhattan_plot_FP_SG(GM,P,cutoff.final,QTN.position,falsePositive,detected)
+  knit_print(mp)
+  print("Manhattan Plot Printed with QTNs and False and True Positives")
   }
+
+  ###Generate QQ plot
+
   qq=qq_plot(GM,P)
   knit_print(qq)
-  #myGLM.results = data.frame((c(row.names(t(GD))[-1],GM[,2],GM[,3],P.value,rank(P.value))),nrow=n,ncol=5)
-  #colnames(myGLM.results)=c("SNP ","Chromosome ","Position ","P value ","Order ")
-  #write.csv(myGLM.results,file="myGLM.results.csv",row.names=FALSE)
+  print("QQ-Plot Printed")
+  P.value_df=data.frame(P.value)
+  myGLM.results = data.frame(GM,P.value_df,rank(P.value_df))
+  colnames(myGLM.results)=c("SNP ","Chromosome ","Position ","P value","Order")
+  write.csv(myGLM.results,file="myGLM.results.csv",row.names=FALSE)
+  print("GWAStest results have printed")
+  GWAS.Results=list(True.Positive=detected,False.Positive=falsePositive,P.value.res=P.value, cutoff.final.res=cutoff.final, sig.SNP.res=sig.SNP, sig.SNP.P.res=P.value[sig.SNP], order.SNP.res=order.SNP, power.fdr.type1error.res=power.fdr.type1error)
   print("GWAStest ran successfully finished!")
-  #return(list(P.value=P.value, cutoff.final=cutoff.final, sig.SNP=sig.SNP, sig.SNP.P=P.value[sig.SNP], order.SNP=order.SNP, power.fdr.type1error=power.fdr.type1error))
-  return(list(cutoff.final=cutoff.final, sig.SNP=sig.SNP, sig.SNP.P=P.value[sig.SNP], order.SNP=order.SNP, power.fdr.type1error=power.fdr.type1error))
-  }
-phenotypes_n_1=phenotypes[,2]
-GWAStest(phenotypes_n_1,genotypes,CV,GM,PCA.M = 3)
+  return(GWAS.Results)
+}
 
