@@ -2,7 +2,6 @@
 #'
 #' @param GM genetic map of data with chr and position of each SNP
 #' @param pvals pvals from gwas results for each SNP
-#' @param cutoff  If cutoff is default, uses Bonferroni; else uses -log(value) of 0.05/number of SNPs
 #' @param QTN_index posistion of QTN if applicable
 #' @param trait character value for trait name
 #' @return QQ plot
