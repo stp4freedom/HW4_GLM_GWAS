@@ -23,12 +23,12 @@ phenotypes <- read.table("CROPS545_Phenotype.txt", header = T, stringsAsFactors 
 
 #Load dependencies
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(mgvc,ggplot2,knitr,gridExtra,kableExtra,data.table)
+pacman::p_load(ggplot2,knitr,gridExtra,kableExtra,data.table)
 
-source("R/Function_qqplot.R")
-source("R/Function_manhattan_QTN.R")
-source("R/Function_manhattan.R")
-source("R/FUNCTION_powerFDRtype1error.R")
+#source("R/Function_qqplot.R")
+#source("R/Function_manhattan_QTN.R")
+#source("R/Function_manhattan.R")
+#source("R/FUNCTION_powerFDRtype1error.R")
 ```
 
 # Question 3
@@ -50,7 +50,7 @@ hist(test$power.fdr.type1error.res$power)
 ## Demo without QTN
 ```{r, fig.show='hide'}
 phenotypes_n_1=phenotypes[,2]
-test=GWASapply(y=phenotypes_n_1,X=genotypes,C=CV,GM=GM,PCA.M = 3,plots=TRUE,messages=TRUE)
+test=GWASapply(phenotypes_n_1,genotypes,CV,GM,PCA.M = 3,plots=TRUE,messages=TRUE)
 ```
 
 ## Demo no plot
@@ -62,27 +62,30 @@ test=GWASapply(phenotypes_n_1,genotypes,CV,GM,PCA.M = 3,plots=FALSE,messages=TRU
 ## Demo no plot nor CV
 ```{r, fig.show='hide'}
 phenotypes_n_1=phenotypes[,2]
-test=GWASapply(y=phenotypes_n_1,X=genotypes,GM=GM,PCA.M = 3,plot=FALSE,messages=TRUE)
+test=GWASapply(phenotypes_n_1,genotypes,GM=GM,PCA.M = 3,plot=FALSE,messages=TRUE)
 ```
 
 ## Demo no plot nor CV
 ```{r, fig.show='hide'}
 phenotypes_n_1=phenotypes[,2]
-test=GWASapply(y=phenotypes_n_1,X=genotypes,GM=GM,PCA.M = 3,plot=FALSE,messages=TRUE)
+test=GWASapply(phenotypes_n_1,genotypes,GM=GM,PCA.M = 3,plot=FALSE,messages=TRUE)
 ```
 
 ## Demo with all parameters, plots and messages and returns a csv, specified trait name
 ```{r, fig.show='hide'}
 phenotypes_n_1=phenotypes[,2]
-test=GWASapply(phenotypes_n_1,genotypes,CV,GM,PCA.M = 3,QTN.position,plot=TRUE,messages=TRUE,print=TRUE,trait="height")
+test=GWASapply(mySim$y,genotypes,CV,GM,PCA.M = 3,mySim$QTN.position,plot=TRUE,messages=TRUE,print=TRUE,trait="height")
+test$power.fdr.type1error.res
 ```
 
 ## Demo with all parameters, plots and messages and returns a csv, with a specified cutoff
 ```{r, fig.show='hide'}
 phenotypes_n_1=phenotypes[,2]
-test=GWASapply(phenotypes_n_1,genotypes,CV,GM,PCA.M = 3,QTN.position,plot=TRUE,messages=TRUE,print=TRUE,cutoff = 0.05)
+mySim=G2P(genotypes, h2, alpha, NQTN, distribution)
+test=GWASapply(mySim$y,genotypes,CV,GM,PCA.M = 3,mySim$QTN.position,plot=TRUE,messages=TRUE,print=FALSE,cutoff = NULL)
 test$power.fdr.type1error.res$FP.fdr.power
 test$power.fdr.type1error.res$TP.fdr.power
+hist(test$power.fdr.type1error.res$power)
 ```
 
 # Question 4
@@ -154,7 +157,9 @@ test_c$True.Positive
 test_c$False.Positive
 test_rep$False.Positive
 pdr=power.fdr(test_rep$order.SNP.res,QTN.position)
-
+tes=fdr(test$P.value.res)
+tes
+mean(test$power.fdr.type1error.res$fdr)
 fal.neg(test_rep$P.value.res,QTN.position,test_rep$cutoff.final.res)
 ```
 
@@ -170,10 +175,10 @@ loop_elapsed <- loop_end[3] - loop_start[3]
 
 #Time our function
 apply_start <- proc.time()
-test=GWASapply(phenotypes_n_1,genotypes,CV,GM,PCA.M = 3)
+test=GWASapply(phenotypes_n_1,genotypes,CV,GM,PCA.M = 3,QTN.position,plot=FALSE,messages=FALSE,print=FALSE,trait="height")
 apply_end <- proc.time()
 apply_elapsed <- apply_end[3] - apply_start[3]
-
+apply_elapsed
 # Consolidate times into a neat table
 time_table <- data.frame(c("loop", "apply"), c(loop_elapsed, apply_elapsed))
 names(time_table) <- c("Method", "Time(s)")
