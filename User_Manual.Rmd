@@ -49,7 +49,18 @@ h4.date { /* Header 4 - and the author and data headers use this too  */
 
 First install 
 ```{r}
-source("R/GWAS_test.r")
+#code to install package from github
+install.packages("devtools")
+library(devtools)
+#install package
+install_github("stp4freedom/HW4_GLM_GWAS")
+#load library
+library(GWAStest)#package name
+phenotypes_n_1=phenotypes[,2]
+a = GWASapply(phenotypes_n_1,genotypes,CV,GM,PCA.M = 3)
+
+
+
 
 library(mgcv)
 library(knitr)
