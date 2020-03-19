@@ -23,11 +23,8 @@ phenotypes <- read.table("CROPS545_Phenotype.txt", header = T, stringsAsFactors 
 
 #Load dependencies
 if (!require("pacman")) install.packages("pacman")
-<<<<<<< HEAD
 pacman::p_load(ggplot2,knitr,gridExtra,kableExtra,data.table)
-=======
-pacman::p_load(mgcv,ggplot2,knitr,gridExtra,kableExtra,data.table)
->>>>>>> 64d9edd5e55d925462b2bf29403c886856c94751
+
 
 #source("R/Function_qqplot.R")
 #source("R/Function_manhattan_QTN.R")
