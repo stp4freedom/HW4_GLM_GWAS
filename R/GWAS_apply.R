@@ -68,7 +68,7 @@ GWASapply<- function(pheno=NULL, geno=NULL, Cov=NULL, GM=NULL, PCA.M=3, QTN.posi
       # IF NO CV INPUT
       if (is.null(CV)){X=cbind(1, PCA$x[,1:PCA.M],x)
       # IF THERE IS CV INPUT
-      }else{fD <- fixDependence(PCA$x[,1:PCA.M], as.matrix(CV))
+      }else{fD <- fix_Dep(PCA$x[,1:PCA.M], as.matrix(CV))
       # WITH CV INPUT, CONDITION 1: NO DEPENDENCE
       if (is.null(fD)){X=cbind(1, PCA$x[,1:PCA.M],CV, x)
 
