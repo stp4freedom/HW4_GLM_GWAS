@@ -9,10 +9,11 @@ Description: This package is a test for hw4 in crop_sci_545 class More about wha
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.1.0
+RoxygenNote: 7.0.2
 Depends:
-  knitr,
-  ggplot2,
-  gridExtra,
-  kableExtra,
-  data.table
+ mgcv (>= 1.8-31),
+ ggplot2,
+ knitr,
+ gridExtra,
+ kableExtra,
+ data.table
