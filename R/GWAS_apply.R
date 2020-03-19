@@ -1,26 +1,27 @@
-<<<<<<< HEAD
-=======
-#sam 03/17/2020 at 5:59pm
->>>>>>> c768835bae8c092f01937487c14f97569ba1f27d
 
 #' GWAS with PCA
 #'
-#' @param phenotypes file with numeric phenotypic values
-#' @param genotypes data.frame with genotype calls coded as 0,1,2.
-#' @param Cov numeric data.frame with covariates values
+#' @param y file with numeric phenotypic values
+#' @param X data.frame with genotype calls coded as 0,1,2.
+#' @param C numeric data.frame with covariates values
 #' @param GM genetic map of data with chr and position of each SNP
 #' @param PCA.M number of principal components to use default is 3
 #' @param QTN.position posistion of QTN if applicable
 #' @param cutoff  If cutoff is default, uses Bonferroni; else uses -log(value) of 0.05/number of SNPs
-#' @return Manhatten plot, QQ plot plus p-values, type-1 error and power for every SNP
-GWAStest<- function(phenotypes=NULL, genotypes=NULL, Cov=NULL, GM=NULL, PCA.M=3, QTN.position=NULL, cutoff=NULL){
-  print("GWAStest Starting")
+#' @param plots  if TRUE, function plots PCA graphs, Manhatten Plot and QQ plot
+#' @param messages if TRUE, returns messages for the GWAS function
+#' @param print if TRUE, results are saved in a CSV
+#' @return Manhatten plot, QQ plot plus p-values, type-1 error and power for every SNP and results in a CSV
+GWASapply<- function(y=NULL, X=NULL, C=NULL, GM=NULL, PCA.M=3, QTN.position=NULL, cutoff=NULL,plots=FALSE,messages=FALSE,print=FALSE){
+
+  if(messages==TRUE){print("GWAStest Starting")}
+  apply_start <- proc.time()
   ###check and copy input data
-  GD=genotypes
+  GD=X
   PCA=prcomp(GD)
-  print("Principal Components have been calculated Successfully")
+  if(messages==TRUE){print("Principal Components have been calculated Successfully")}
   PCA_results <- summary(PCA)
-  print(kable(round(PCA_results$importance[,1:10], 2)))
+  if(plots==TRUE){print(kable(round(PCA_results$importance[,1:10], 2)))
 
   #Variance Explained
   var_exp_plot_data <- data.frame(t(PCA_results$importance)) # I transposed the data to be in long form and coerce to a data.frame for ggplot
@@ -50,16 +51,18 @@ GWAStest<- function(phenotypes=NULL, genotypes=NULL, Cov=NULL, GM=NULL, PCA.M=3,
     ggplot(data = PCA_plot_data, aes(x = PC2, y = PC3)) +
     geom_point()
   grid.arrange(pca_comp_plot_12, pca_comp_plot_13, pca_comp_plot_23, nrow = 2, ncol = 2, top = "Principal Components")
-  print("Principal Components plots have been printed Successfully")
+  if(messages==TRUE){print("Principal Components plots have been printed Successfully")}}
   n=nrow(GD)
   m=ncol(GD)
-  CV=Cov[,-1]
-  y=phenotypes
-  P=matrix(NA,1,m)
-  for (i in 1:m){
-    x=GD[,i]
+  CV=C[,-1]
+  y=y
+  #P=matrix(NA,1,m)
+  P=apply(GD,2, function(x)
+
+    #x=GD[,1]
     # CHECK FOR GENOTYPE DISTRIBUTION
     if(max(x)==min(x)){p=1
+    P=p[length(p)]
     # IF MAX NOT EQUAL TO MIN
     }else{
       # CHECK FOR DEPENDENCE
@@ -86,23 +89,24 @@ GWAStest<- function(phenotypes=NULL, genotypes=NULL, Cov=NULL, GM=NULL, PCA.M=3,
       vt=C*ve
       t=b/sqrt(diag(vt))
       p=2*(1-pt(abs(t),n-2))
+      P=p[length(p)]
     }# END FOR MAX NOT EQUAL TO MIN
-    P[i]=p[length(p)] # COLLECT P-VALUES
-  } #end of looping for markers
-
+    #P[i]=p[length(p)]
+    #P=p[length(p)]# COLLECT P-VALUES
+  ) #end of looping for markers
+  P=t(matrix(P))
   P.value=P
   order.SNP=order(P.value)
-
   #If cutoff is default, uses Bonferroni; else uses -log(value)
   cutoff.final=(ifelse(
     is.null(cutoff),
     0.05/m,
     cutoff
   ))
-  print(paste0("The final cuttoff for a significance p-value is ",as.character(cutoff.final)))
+  if(messages==TRUE){print(paste0("The final cuttoff for a significant p-value is ",as.character(cutoff.final)))}
   sig.SNP <- order.SNP[sort(P.value)<=cutoff.final]
   lsnp=length(sig.SNP)
-  print(paste0(as.character(lsnp), " Significant SNPs were found"))
+  if(messages==TRUE){print(paste0(as.character(lsnp), " Significant SNPs were found"))}
 
   ###
   zeros=P==0
@@ -111,9 +115,9 @@ GWAStest<- function(phenotypes=NULL, genotypes=NULL, Cov=NULL, GM=NULL, PCA.M=3,
   ###Generate Manhattan plot
   if (is.null(QTN.position)){
 
-  mp=manhattan_plot(GM,P,cutoff.final)
+    if(plots==TRUE){mp=manhattan_plot(GM,P,cutoff.final)
   knit_print(mp)
-  print("Manhattan Plot Printed without QTN")
+  if(messages==TRUE){print("Manhattan Plot Printed without QTN")}}
 
   # WITH CV INPUT, CONDITION 2: WITH DEPENDENCE
   }else {
@@ -125,30 +129,32 @@ GWAStest<- function(phenotypes=NULL, genotypes=NULL, Cov=NULL, GM=NULL, PCA.M=3,
     detected=intersect(sig.SNP,QTN.position)
     if(length(detected)==0){detected=NULL}
     falsePositive=setdiff(sig.SNP, QTN.position)
-    print(paste0("QTN's detected with ",as.character(length(detected))," True Positives and ",as.character(length(falsePositive))," False Positives."))
-  mp=manhattan_plot_FP_SG(GM,P,cutoff.final,QTN.position,falsePositive,detected)
-  knit_print(mp)
-  print("Manhattan Plot Printed with QTNs and False and True Positives")
+    if(messages==TRUE){print(paste0("QTN's detected with ",as.character(length(detected))," True Positives and ",as.character(length(falsePositive))," False Positives."))}
+    if(plots==TRUE){ mp=manhattan_plot_FP_SG(GM,P,cutoff.final,QTN.position,falsePositive,detected)
+    knit_print(mp)
+    if(messages==TRUE){print("Manhattan Plot Printed with QTNs and False and True Positives")}}
+
   }
 
   ###Generate QQ plot
 
-  qq=qq_plot(GM,P)
+  if(plots==TRUE){qq=qq_plot(GM,P)
   knit_print(qq)
-  print("QQ-Plot Printed")
+  if(messages==TRUE){print("QQ-Plot Printed")}}
   P.value_df=data.frame(P.value)
-  myGLM.results = data.frame(GM,P.value_df,rank(P.value_df))
+  if(print==TRUE){myGLM.results = data.frame(GM,P.value_df,rank(P.value_df))
   colnames(myGLM.results)=c("SNP ","Chromosome ","Position ","P value","Order")
-  fwrite(myGLM.results,file="myGLM.results.csv",row.names=FALSE)
-  print("GWAStest results have printed")
+  fwrite(myGLM.results,file="myGLM.results.csv",row.names=FALSE)}
+  if(messages==TRUE){print("GWAStest results have printed")}
   #Returns Values that include false and true positives if QTN are provided
   if (!is.null(QTN.position)){
     GWAS.Results=list(True.Positive=detected,False.Positive=falsePositive,P.value.res=P.value, cutoff.final.res=cutoff.final, sig.SNP.res=sig.SNP, sig.SNP.P.res=P.value[sig.SNP], order.SNP.res=order.SNP, power.fdr.type1error.res=power.fdr.type1error)
   }else{
     GWAS.Results=list(P.value.res=P.value, cutoff.final.res=cutoff.final, sig.SNP.res=sig.SNP, sig.SNP.P.res=P.value[sig.SNP], order.SNP.res=order.SNP)
   }
-
-  print("GWAStest ran successfully finished!")
+  apply_end <- proc.time()
+  apply_elapsed <- apply_end[3] - apply_start[3]
+  if(messages==TRUE){print(paste0("GWAStest ran successfully and took ",as.character(round(apply_elapsed[[1]],2))," seconds"))}
   return(GWAS.Results)
 }
 
