@@ -11,7 +11,7 @@ Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.0.2
 Depends:
- mgcv,
+ mgcv (>= 1.8-31),
  ggplot2,
  knitr,
  gridExtra,

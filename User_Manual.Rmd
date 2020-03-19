@@ -53,7 +53,7 @@ First install
 install.packages("devtools")
 library(devtools)
 #install package
-install_github("stp4freedom/HW4_GLM_GWAS",dependencies = TRUE)
+install_github("stp4freedom/HW4_GLM_GWAS")
 #load library
 library(GWAStest)#package name
 
