@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-=======
-#sam 03/17/2020 at 5:59pm
->>>>>>> c768835bae8c092f01937487c14f97569ba1f27d
-
 #' GWAS with PCA
 #'
 #' @param phenotypes file with numeric phenotypic values
