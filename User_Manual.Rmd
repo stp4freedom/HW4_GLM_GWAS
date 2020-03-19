@@ -53,10 +53,17 @@ First install
 install.packages("devtools")
 library(devtools)
 #install package
-install_github("stp4freedom/HW4_GLM_GWAS",force = TRUE)
+install_github("stp4freedom/HW4_GLM_GWAS",dependencies = TRUE)
 #load library
 library(GWAStest)#package name
 
+if (!file.exists("GAPIT_Tutorial_Data.zip"))
+{
+  download.file("http://zzlab.net/GAPIT/GAPIT_Tutorial_Data.zip", destfile = "GAPIT_Tutorial_Data.zip")
+  unzip("GAPIT_Tutorial_Data.zip")
+}
+download.file("http://zzlab.net/GAPIT/data/CROP545_Covariates.txt", destfile = "CROPS545_Covariates.txt")
+download.file("http://zzlab.net/GAPIT/data/CROP545_Phenotype.txt", destfile = "CROPS545_Phenotype.txt")
 # Import the GAPIT demo data genotypes
 gt_scan <- data.frame(read.table("GAPIT_Tutorial_Data/mdp_numeric.txt", header = T, stringsAsFactors = F, sep = "\t", nrows = 1))
 classes <- sapply(gt_scan, class)
