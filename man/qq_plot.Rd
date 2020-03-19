@@ -14,8 +14,6 @@ qq_plot(GM, pvals, QTN_index = c(), trait = "unknown")
 \item{QTN_index}{posistion of QTN if applicable}
 
 \item{trait}{character value for trait name}
-
-\item{cutoff}{If cutoff is default, uses Bonferroni; else uses -log(value) of 0.05/number of SNPs}
 }
 \value{
 QQ plot

@@ -1,6 +1,5 @@
 #' Detect linear dependencies of one matrix on another
 #'
-#' @description Identifies columns of a matrix X2 which are linearly dependent on columns of a matrix X1. Primarily of use in setting up identifiability constraints for nested GAMs.
 #' @param X1 A matrix.
 #' @param X2 A matrix, the columns of which may be partially linearly dependent on the columns of X1.
 #' @param tol The tolerance to use when assessing linear dependence.
