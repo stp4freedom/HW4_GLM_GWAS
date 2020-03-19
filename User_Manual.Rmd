@@ -53,9 +53,20 @@ First install
 install.packages("devtools")
 library(devtools)
 #install package
-install_github("stp4freedom/HW4_GLM_GWAS")
+install_github("stp4freedom/HW4_GLM_GWAS",force = TRUE)
 #load library
 library(GWAStest)#package name
+
+# Import the GAPIT demo data genotypes
+gt_scan <- data.frame(read.table("GAPIT_Tutorial_Data/mdp_numeric.txt", header = T, stringsAsFactors = F, sep = "\t", nrows = 1))
+classes <- sapply(gt_scan, class)
+genotypes <- data.frame(read.table("GAPIT_Tutorial_Data/mdp_numeric.txt", header = T, row.names = 1, colClasses = classes, stringsAsFactors = F, sep = "\t"))
+
+GM <- read.table("GAPIT_Tutorial_Data/mdp_SNP_information.txt", header = T, stringsAsFactors = F, sep = "\t")
+CV <- read.table("CROPS545_Covariates.txt", header = T, stringsAsFactors = F, sep = "\t")
+phenotypes <- read.table("CROPS545_Phenotype.txt", header = T, stringsAsFactors = F, sep = "\t")
+
+
 phenotypes_n_1=phenotypes[,2]
 a = GWASapply(phenotypes_n_1,genotypes,CV,GM,PCA.M = 3)
 
