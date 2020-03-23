@@ -1,11 +1,11 @@
 ---
-title: "User Manual and Tutorial for GWAS"
+title: "User Manual and Tutorial for GWAStest"
 author: "Lance Merrick & Samuel Prather"
 date: "March 30, 2020"
 output:
   html_document:
     df_print: paged
-
+  pdf_document: default
 ---
 
 <style type="text/css">
@@ -33,11 +33,10 @@ h4.date { /* Header 4 - and the author and data headers use this too  */
 
 <center>
 
-![test image of wheat for logo. ](wheatclipart.png){#id .class width=300 height=300px}
+![](wheatclipart.png){#id .class width=300 height=300px}
 
 </center>
 
-<p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
@@ -117,9 +116,11 @@ Example1=GWASapply(pheno=phenotypes_n_1, geno=genotypes,Cov=CV, GM=GM, PCA.M = 3
 ```
 
 ### Examples with know QTNs
-In order to truly show how the using the covariates work to improve the GWAS accuracies I am going to simulate some QTN effects using the function G2P. All this function is doing is generating effects and randomly assigning then to different SNPs. This will allow me to run GWAStest and be able to determine it’s accuracy 
+In order to fully demonstrate GWAStest functions, I am going to simulate some QTN effects using the function G2P. All G2Pis doing is generating effects and randomly assigning then to different SNPs. This will allow me to run GWAStest and be able to determine it’s accuracy. 
+\
+\
+As we can see in the Manhattan plot and from the printed massages 8 significant SNPs were detected, the 4 of them in black are true positives 2 in blue are false positives and the two in red are false negatives. Note some of the lines are very close to each other and can be hard to see which is why it’s nice to have messages = TRUE as that will prints the important findings into the R console. 
 
-As we can see in the Manhattan plot and from the printed massages 8 significant SNPs were detected with 4 of then in black are true positives 2 in blue are false positives and the two in red are false negatives. Note some of the lines are very close to each other and can be hard to see which is why it’s nice to have messages = TRUE as then prints the important findings in the R console.
 ```{r,warning=FALSE}
 source("http://www.zzlab.net/StaGen/2020/R/G2P.R")
 NQTN = 6 #specify number of QTN
@@ -130,11 +131,21 @@ set.seed(66) # to get duplicatable results
 mySim=G2P(genotypes, h2, alpha, NQTN, distribution)
 Example2=GWASapply(pheno=mySim$y, geno=genotypes, GM=GM, PCA.M=3,QTN.position=mySim$QTN.position, plots=TRUE, messages=TRUE, trait="Example2_phenotype")
 ```
+###  Quick run 
 If you want to reduce the output and speed up the run time you can run GWAStest with plots=FALSE which will still run the GWAS but does not output any plots
 ```{r,warning=FALSE}
 Example3=GWASapply(pheno=mySim$y, geno=genotypes, Cov=CV, GM=GM, PCA.M = 3,QTN.position=mySim$QTN.position, plots=FALSE, messages=TRUE, trait="Example3_phenotype")
 ```
+###  Quick run options
+After running GWASapply with plots = FALSE you can always run the plots individual as shown below. This option gives you more flexibility over the output and can help for specific analyses. 
 
 ```{r,warning=FALSE}
 manhattan_plot(GM,Example3$P.value.res, trait="ManhattenPlot_example",FP = Example3$False.Positive, TP = Example3$True.Positive)
+qq_plot(GM,Example3$P.value.res,QTN.position, trait = "qq_plot_example")
 ```
+### Further Information
+
+For more information on individual functions please see the “Reference_Manual.pdf” or type ?FUNCITON_NAME into the R console, this will pull up specific information of each function inside GWAStest. For example typing ?manhatten_plot will pull of the help page with details about the function that creates the Manhattan plots.
+
+
+
