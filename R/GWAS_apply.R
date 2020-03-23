@@ -21,7 +21,7 @@ GWASapply<- function(pheno=NULL, geno=NULL, Cov=NULL, GM=NULL, PCA.M=3, QTN.posi
   PCA=prcomp(GD)
   if(messages==TRUE){print("Principal Components have been calculated Successfully")}
   PCA_results <- summary(PCA)
-  if(plots==TRUE){print(kable(round(PCA_results$importance[,1:10], 2)))
+  if(plots==TRUE){kable(round(PCA_results$importance[,1:10], 2))
 
   #Variance Explained
   var_exp_plot_data <- data.frame(t(PCA_results$importance)) # I transposed the data to be in long form and coerce to a data.frame for ggplot
