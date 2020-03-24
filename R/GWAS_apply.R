@@ -12,12 +12,84 @@
 #' @param print if TRUE, results are saved in a CSV
 #' @param trait character value for trait name
 #' @return Manhatten plot, QQ plot plus p-values, type-1 error and power for every SNP and results in a CSV
-GWASapply<- function(pheno=NULL, geno=NULL, Cov=NULL, GM=NULL, PCA.M=3, QTN.position=NULL, cutoff=NULL,plots=FALSE,messages=FALSE,print=FALSE,trait="unknown"){
+GWASapply<- function(pheno=NULL, geno=NULL, Cov=NULL, GM=NULL, PCA.M=3, QTN.position=NULL, cutoff=NULL,plots=FALSE,messages=FALSE,print=FALSE,trait="unknown",rapid=FALSE){
+  if(rapid==TRUE){
+    apply_start <- proc.time()
+    GD=geno
+    n=nrow(GD)
+    m=ncol(GD)
+    CV=Cov[,-1]
+    y=pheno
+    PCA=prcomp(GD)
+    P=apply(GD,2, function(x)
+
+      #x=GD[,1]
+      # CHECK FOR GENOTYPE DISTRIBUTION
+      if(max(x)==min(x)){p=1
+      P=p[length(p)]
+      # IF MAX NOT EQUAL TO MIN
+      }else{
+        # CHECK FOR DEPENDENCE
+        # IF NO CV INPUT
+        if (is.null(CV)){X=cbind(1, PCA$x[,1:PCA.M],x)
+        # IF THERE IS CV INPUT
+        }else{fD <- fix_Dep(PCA$x[,1:PCA.M], as.matrix(CV))
+        # WITH CV INPUT, CONDITION 1: NO DEPENDENCE
+        if (is.null(fD)){X=cbind(1, PCA$x[,1:PCA.M],CV, x)
+
+        # WITH CV INPUT, CONDITION 2: WITH DEPENDENCE
+        }else {X=cbind(1, PCA$x[,1:PCA.M],x)}
+        }# END FOR DEPENDECE
+        # SOLVE THE LINEAR REGRESSION MATRIX:
+        #  X=as.matrix(X)
+        LHS=t(X)%*%X
+        C=solve(LHS)
+        RHS=t(X)%*%y
+        b=C%*%RHS
+        yb=X%*%b
+        e=y-yb
+        n=length(y)
+        ve=sum(e^2)/(n-1)
+        vt=C*ve
+        t=b/sqrt(diag(vt))
+        p=2*(1-pt(abs(t),n-2))
+        P=p[length(p)]
+      }# END FOR MAX NOT EQUAL TO MIN
+      # COLLECT P-VALUES
+    ) #end of appply function for markers
+    P=t(matrix(P))
+    P.value=P
+    order.SNP=order(P.value)
+    #If cutoff is default, uses Bonferroni; else uses -log(value)
+    cutoff.final=(ifelse(
+      is.null(cutoff),
+      0.05/m,
+      cutoff
+    ))
+    #if(messages==TRUE){print(paste0("The final cuttoff for a significant p-value is ",as.character(cutoff.final)))}
+    sig.SNP <- order.SNP[sort(P.value)<=cutoff.final]
+    lsnp=length(sig.SNP)
+    #if(messages==TRUE){print(paste0(as.character(lsnp), " Significant SNPs were found"))}
+
+    ###
+    zeros=P==0
+    P[zeros]=1e-20
+    P=data.frame(P)
+    GWAS.Results=list(P.value.res=P.value, cutoff.final.res=cutoff.final, sig.SNP.res=sig.SNP, sig.SNP.P.res=P.value[sig.SNP], order.SNP.res=order.SNP)
+    apply_end <- proc.time()
+    apply_elapsed <- apply_end[3] - apply_start[3]
+    if(messages==TRUE){print(paste0("GWASapply ran successfully and took ",as.character(round(apply_elapsed[[1]],2))," seconds"))}
+    return(GWAS.Results)
+  }else{
   #If messages is true display gwas starting
   if(messages==TRUE){print("GWASapply Starting")}
   apply_start <- proc.time()
   ###check and copy input data
   GD=geno
+  n=nrow(GD)
+  m=ncol(GD)
+  CV=Cov[,-1]
+  y=pheno
   PCA=prcomp(GD)
   if(messages==TRUE){print("Principal Components have been calculated Successfully")}
   PCA_results <- summary(PCA)
@@ -52,10 +124,7 @@ GWASapply<- function(pheno=NULL, geno=NULL, Cov=NULL, GM=NULL, PCA.M=3, QTN.posi
     geom_point()
   grid.arrange(pca_comp_plot_12, pca_comp_plot_13, pca_comp_plot_23, nrow = 2, ncol = 2, top = "Principal Components")
   if(messages==TRUE){print("Principal Components plots have been printed Successfully")}}
-  n=nrow(GD)
-  m=ncol(GD)
-  CV=Cov[,-1]
-  y=pheno
+
   P=apply(GD,2, function(x)
 
     #x=GD[,1]
@@ -153,5 +222,5 @@ GWASapply<- function(pheno=NULL, geno=NULL, Cov=NULL, GM=NULL, PCA.M=3, QTN.posi
   apply_elapsed <- apply_end[3] - apply_start[3]
   if(messages==TRUE){print(paste0("GWASapply ran successfully and took ",as.character(round(apply_elapsed[[1]],2))," seconds"))}
   return(GWAS.Results)
-}
+}}
 
