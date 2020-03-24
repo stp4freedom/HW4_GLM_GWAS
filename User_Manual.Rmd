@@ -1,5 +1,5 @@
 ---
-title: "User Manual and Tutorial for GWAStest"
+title: "User Manual and Tutorial for GWhEAT"
 author: "Lance Merrick & Samuel Prather"
 date: "March 30, 2020"
 output:
@@ -16,18 +16,21 @@ h1.title {
   text-align: center;
 }
 h4.author { /* Header 4 - and the author and data headers use this too  */
-    font-size: 18px;
+    font-size: 25px;
   font-family: "Times New Roman", Times, serif;
-  color: DarkRed;
+  color: black;
   text-align: center;
 }
 h4.date { /* Header 4 - and the author and data headers use this too  */
   font-size: 18px;
   font-family: "Times New Roman", Times, serif;
-  color: DarkBlue;
+  color: black;
   text-align: center;
 }
 </style>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
 
 <!-- test inserting image-->
 
@@ -38,28 +41,43 @@ h4.date { /* Header 4 - and the author and data headers use this too  */
 </center>
 
 <p>&nbsp;</p>
+
+<center> <font size="6"> **Genome Wide Efficient Association Test (GWhEAT)** </font> </center> 
+
+
+<p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 
 ### **Table of contents**
-### Introduction
-### Tutorial
+#### Introduction
+#### Getting started
+#### Required Inputes
+#### Optional Inputes
+#### Outputs and Examples
+#### Examples with know QTNs
+#### Rapid run
+#### Rapid run options
+#### Further Information
 
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
 
 ### **Introduction**
 
-A common problem associated with preforming Genome Wide Association Studies (GWAS) is the abundance of false positive and false negative associated with population structure. One way of dealing with this issue is to first calculate Principal Components (PC) and then use those PCs as to account for population structure when running the GWAS. This method has shown to not only reduce false positives but also increase the power of the test. 
-Here we present an R based package that can preform GWAS using PCA and user imputed covariate to calculate SNPs associated with a phenotype called “GWAStest”. Using the freely availably R studio software this packaged is designed to quickly and efficiently calculate a P-value for every SNP phenotype association. The results from this package are including but not limited to a Manhattan plot, QQ-plot and table with every recorded p-value. 
+A common problem associated with performing Genome Wide Association Studies (GWAS) is the abundance of false positive and false negative associated with population structure. One way of dealing with this issue is to first calculate Principal Components (PC) and then use those PCs as to account for population structure when running the GWAS. This method has shown to not only reduce false positives but also increase the power of the test. 
+Here we present an R based package that can preform GWAS using PCA and user imputed covariate to calculate SNPs associated with a phenotype called “GWhEAT”. Using the freely availably R studio software this packaged is designed to quickly and efficiently calculate a P-value for every SNP phenotype association. The results from this package are including but not limited to a Manhattan plot, QQ-plot and table with every recorded p-value. 
 
-### Getting started
+### **Getting started**
 
-First if you do not already have R and R studio installed on your computer head over to https://www.r-project.org/ and install the version appropriate for you machine. Once R and R studio is installed you will need to install the GWAStest package since this is a working package in it’s early stages of development it’s only available through Github. To download files off Github first download and load the library of the packaged “devtools” using the code below.
+First if you do not already have R and R studio installed on your computer head over to https://www.r-project.org/ and install the version appropriate for you machine. Once R and R studio is installed you will need to install the GWhEAT package since this is a working package in it’s early stages of development it’s only available through Github. To download files off Github first download and load the library of the packaged “devtools” using the code below.
 ```{r,warning=FALSE}
 #code to install package from github
 #install.packages("devtools")
 library(devtools)
 ```
-Next using the code below download and install the package GWAStest from Github. The bottom two line of code in the chunk below make sure the dependencies GWAStest relies on are also downloaded and installed. 
+Next using the code below download and install the package GWhEAT from Github. The bottom two line of code in the chunk below make sure the dependencies GWhEAT relies on are also downloaded and installed. 
 ```{r,warning=FALSE}
 #install package
 install_github("stp4freedom/HW4_GLM_GWAS", force =TRUE)
@@ -68,7 +86,7 @@ library(GWAStest)#package name
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load(ggplot2,knitr,gridExtra,kableExtra)
 ```
-In order to have an effective tutorial you’ll need some data to play with, this code below downloads and loads into your environment data that for this tutorial. 
+In order to have an effective tutorial you’ll need some data to play with, this code below downloads and loads into your environment data that can be used for this tutorial. 
 ```{r}
 if (!file.exists("GAPIT_Tutorial_Data.zip"))
 {
@@ -86,37 +104,37 @@ GM <- read.table("GAPIT_Tutorial_Data/mdp_SNP_information.txt", header = T, stri
 CV <- read.table("CROPS545_Covariates.txt", header = T, stringsAsFactors = F, sep = "\t")
 phenotypes <- read.table("CROPS545_Phenotype.txt", header = T, stringsAsFactors = F, sep = "\t")
 ```
-### Required Inputes
+### **Required Inputes**
 
-There are three data components required to run GWAStest, the SNP data the phenotype(s) and a map showing the chromosome and positions of each SNP. The SNP data must be numeric coded as “0”, “1” and “2” where the 0 stands for homozygous for parent A, 2 stands for homozygous for parent B and 1 is for heterozygous SNP calls. Below is an example showing the first 5 rows and columns of our tutorial SNP data.
+There are three data components required to run GWhEAT, the SNP data the phenotype(s) and a map showing the chromosome and positions of each SNP. The SNP data must be numeric coded as “0”, “1” and “2” where the 0 stands for homozygous for parent A, 2 stands for homozygous for parent B and 1 is for heterozygous SNP calls. Below is an example showing the first 5 rows and columns of our tutorial SNP data.
 ```{r}
 genotypes[1:5,1:5]
 ```
-The phenotype can and integers negative or positive that correspond to each individual. Note: Below I have the head of the phenotype printed with the taxa column still included, before running GWAStest you will need to remove the taxa column leaving only the phenotypic values for the function to work. 
+The phenotype can and integers negative or positive that correspond to each individual. Note: Below I have the head of the phenotype printed with the taxa column still included, before running GWhEAT you will need to remove the taxa column leaving only the phenotypic values for the function to work. 
 ```{r}
 phenotypes[1:5,1:2]
 ```
-The final piece of information needed for GWAStest of work is a genetic map of the SNPs that had the SNP name the chromosome it’s on and the position on that chromosome. This genetic map is needed in order to produce the Manhattan plot of the results.
+The final piece of information needed for GWhEAT to work is a genetic map of the SNPs. This map must have the SNP name  and the chromosome it’s on as well as the position on that chromosome. This genetic map is needed in order to produce the Manhattan plot of the results.
 ```{r}
 GM[1:5,1:3]
 ```
-### Optional Inputes
+### **Optional Inputes**
 
-The optional imputes for GWAStest are the covariates which if used can help increases the power of the GWAS. The covariates mush be numerical integers much like the phenotype values. Below is an example from the tutorial data.
+The optional imputes for GWhEAT are the covariates which if used can help increases the power of the GWAS. The covariates mush be numerical integers much like the phenotype values. Below is an example from the tutorial data.
 ```{r}
 CV[1:5,1:3]
 ```
 Other imputes include number of PCAs to use, with the default being set to three. The significance threshold (Cutoff) which can be set to the exact -log(10) of the p-value you want or the default of 0.05/number of SNPs. There are also some options you can use to suppress the plots automatically generated. Tp best show these options I will run a few examples below.  
 
-### Outputs and examples
-Outputs from GWAStest are table with information on the PCA, Graphs showing variance explained by the PC, scatter plots of the PC used, a Manhatten plot and a  QQ-plot. A csv file with all SNPs and associated p-values and a table with the power and type-1 error are also optional outputs.
+### **Outputs and Examples**
+Outputs from GWhEAT are table with information on the PCA, Graphs showing variance explained by the PC, scatter plots of the PC used, a Manhatten plot and a  QQ-plot. A csv file with all SNPs and associated p-values and a table with the power and type-1 error are also optional outputs.
 ```{r,warning=FALSE}
 phenotypes_n_1=phenotypes[,2]#remember to remove the first column from the phenotype data before running
 Example1=GWASapply(pheno=phenotypes_n_1, geno=genotypes,Cov=CV, GM=GM, PCA.M = 3, plots=TRUE, messages=TRUE, trait="Example1_phenotype")
 ```
 
-### Examples with know QTNs
-In order to fully demonstrate GWAStest functions, I am going to simulate some QTN effects using the function G2P. All G2Pis doing is generating effects and randomly assigning then to different SNPs. This will allow me to run GWAStest and be able to determine it’s accuracy. 
+### **Examples with know QTNs**
+In order to fully demonstrate GWhEAT functions, I am going to simulate some QTN effects using the function G2P. All G2Pis doing is generating effects and randomly assigning then to different SNPs. This will allow me to run GWhEAT and be able to determine it’s accuracy. 
 \
 \
 As we can see in the Manhattan plot and from the printed massages 8 significant SNPs were detected, the 4 of them in black are true positives 2 in blue are false positives and the two in red are false negatives. Note some of the lines are very close to each other and can be hard to see which is why it’s nice to have messages = TRUE as that will prints the important findings into the R console. 
@@ -131,21 +149,24 @@ set.seed(66) # to get duplicatable results
 mySim=G2P(genotypes, h2, alpha, NQTN, distribution)
 Example2=GWASapply(pheno=mySim$y, geno=genotypes, GM=GM, PCA.M=3,QTN.position=mySim$QTN.position, plots=TRUE, messages=TRUE, trait="Example2_phenotype")
 ```
-###  Quick run 
-If you want to reduce the output and speed up the run time you can run GWAStest with plots=FALSE which will still run the GWAS but does not output any plots
+
+###  **Rapid run**
+As sequencing data become more accessible and data sets become larger a necessity of GWAS packages is computational speed. In light of this we created a function within GWhEAT that runs the GWAS in a rapid manor called “GWASapply_rapid”. “GWASapply_rappid” works the same as GWASapply but will not print the Manhattan or other plots and is able to run more quickly.    
 ```{r,warning=FALSE}
-Example3=GWASapply(pheno=mySim$y, geno=genotypes, Cov=CV, GM=GM, PCA.M = 3,QTN.position=mySim$QTN.position, plots=FALSE, messages=TRUE, trait="Example3_phenotype")
+Example3=GWASapply_rapid(pheno=phenotypes_n_1, geno=genotypes, Cov=CV, GM=GM, PCA.M = 3,cutoff=NULL)
 ```
-###  Quick run options
-After running GWASapply with plots = FALSE you can always run the plots individual as shown below. This option gives you more flexibility over the output and can help for specific analyses. 
+###  **Rapid run options**
+After running GWASapply_rapid you can always create individual plots as shown below. This option gives you more flexibility over the output and can help for specific analyses. 
 
 ```{r,warning=FALSE}
 manhattan_plot(GM,Example3$P.value.res, trait="ManhattenPlot_example",FP = Example3$False.Positive, TP = Example3$True.Positive)
 qq_plot(GM,Example3$P.value.res,QTN.position, trait = "qq_plot_example")
 ```
-### Further Information
 
-For more information on individual functions please see the “Reference_Manual.pdf” or type ?FUNCITON_NAME into the R console, this will pull up specific information of each function inside GWAStest. For example typing ?manhatten_plot will pull of the help page with details about the function that creates the Manhattan plots.
+
+### **Further Information**
+
+For more information on individual functions please see the “Reference_Manual.pdf” or type ?FUNCITON_NAME into the R console, this will pull up specific information of each function inside GWhEAT. For example typing ?manhatten_plot will pull of the help page with details about the function that creates the Manhattan plots.
 
 
 

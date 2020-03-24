@@ -1,6 +1,6 @@
 Package: GWAStest
 Type: Package
-Title: Genome Wide Association Study
+Title: Genome Wide Efficient Association Test (GWhEAT)
 Version: 0.1.0
 Author: Lance Merrick, Samuel Prather
 Maintainer: Samuel Prather <stp4freedom@gmail.com>
