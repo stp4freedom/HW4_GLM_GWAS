@@ -50,8 +50,23 @@ hist(test$power.fdr.type1error.res$power)
 
 ## Demo without QTN
 ```{r, fig.show='hide'}
+
 phenotypes_n_1=phenotypes[,2]
-test=GWASapply(phenotypes_n_1,genotypes,CV,GM,PCA.M = 3,plots=TRUE,messages=TRUE)
+loop_start <- proc.time()
+test=GWASapply_rapid(phenotypes_n_1,genotypes,CV,GM,PCA.M = 3)
+loop_end <- proc.time()
+loop_elapsed <- loop_end[3] - loop_start[3]
+
+timet=c()
+garep=replicate(30,{
+loop_start <- proc.time()
+test=GWASapply_rapid(phenotypes_n_1,genotypes,CV,GM,PCA.M = 3)
+loop_end <- proc.time()
+loop_elapsed <- loop_end[3] - loop_start[3]
+timet=c(time,loop_elapsed)
+  })
+mean(garep)
+manhattan_plot(GM,test$P.value.res,cutoff=NULL, trait = "unknown",messages=TRUE)
 ```
 
 ## Demo no plot
@@ -89,9 +104,10 @@ test$power.fdr.type1error.res$TP.fdr.power
 hist(test$power.fdr.type1error.res$power)
 ```
 
-# Question 4
+# Question 5
 
 ## Simulated Data
+### Manhattan Plots
 ```{r}
 source("http://www.zzlab.net/StaGen/2020/R/G2P.R")
 source("http://www.zzlab.net/StaGen/2020/R/GWASbyCor.R")
@@ -99,14 +115,167 @@ NQTN = 10 #specify number of QTN
 h2 = 0.75 #heritability
 alpha = 0.6 #alpha value
 distribution = "normal" #specify distribution
-set.seed(1337)
+#set.seed(1337)
+#plotting
+  mySim=G2P(genotypes, h2, alpha, NQTN, distribution) #phenotype simulation
+  p= GWASbyCor(X=genotypes,y=mySim$y)#GWAS by using the correlation methods
+  p=data.frame(p)
+  pres=power.fdr(p, QTN.position=mySim$QTN.position,cutoff=NULL)
+  gcm=manhattan_plot(GM,p,cutoff=NULL,mySim$QTN.position,FP=pres$FP.fdr.power,TP=pres$TP.fdr.power, trait = "unknown",messages=TRUE)
+  gcq=qq_plot(GM,p,mySim$QTN.position, trait = "unknown")
+  test=GWASapply(mySim$y,genotypes,CV,GM,PCA.M = 3,QTN.position=mySim$QTN.position)
+  gtm=manhattan_plot(GM,test$P.value.res,cutoff=NULL,mySim$QTN.position,FP=test$False.Positive,TP=test$True.Positive, trait = "unknown",messages=TRUE)
+  gtq=qq_plot(GM,test$P.value.res,mySim$QTN.position, trait = "unknown")
+  grid.arrange(gcm, gtm, nrow = 2, ncol = 1, top = "Variance of Principal Components")
+  grid.arrange(gcq,gtq, nrow = 2, ncol = 1, top = "Variance of Principal Components")
+```
+
+# Mean True and False Positives
+```{r}
 gcrep=replicate (30,{
   mySim=G2P(genotypes, h2, alpha, NQTN, distribution) #phenotype simulation
-  p= as.vector(GWASbyCor(X=genotypes,y=phenotypes_n_1))#GWAS by using the correlation methods
+  p= GWASbyCor(X=genotypes,y=mySim$y)#GWAS by using the correlation methods
+  p=data.frame(p)
+  pres=power.fdr(p, QTN.position=mySim$QTN.position,cutoff=NULL)
+  FalP=length(pres$FP.fdr.power)
+  TruP=length(pres$TP.fdr.power)
+  num_output=c()
+  num_output=c(FalP,TruP)
+  })
+View(gcrep)
+print(rowMeans(gcrep))
+# 5.16 (# QTN in top 10 p-value SNPs)  211.59 (# QTN with p-value lower than 7th highest)
+print(apply(gcrep,1,sd))
+```
+
+```{r}
+garep=replicate(30,{
+  mySim=G2P(genotypes, h2, alpha, NQTN, distribution)
+  test_rep=GWASapply(mySim$y,genotypes,CV,GM,PCA.M = 3,QTN.position=mySim$QTN.position)
+  FalP=length(test_rep$False.Positive)
+  TruP=length(test_rep$True.Positive)
+  num_output=c()
+  num_output=c(FalP,TruP)
+  })
+print(rowMeans(garep))
+# 5.16 (# QTN in top 10 p-value SNPs)  211.59 (# QTN with p-value lower than 7th highest)
+print(apply(garep,1,sd))
+```
+
+```{r}
+h2 <- c(0.25, 0.5, 0.75, 1)
+NQTN <- c(2, 10, 100)
+rept <- 100 #replicate time
+nsnp <- length(genotypes[1,])
+for(i in 1:length(h2)){
+  for(j in 1:length(NQTN)){
+    assign(paste("h2.", i, ".NQTN.", j, ".GLM.power", sep=""), matrix(NA, nrow=nsnp, ncol=0))
+    assign(paste("h2.", i, ".NQTN.", j, ".GLM.fdr", sep=""), matrix(NA, nrow=nsnp, ncol=0))
+    
+    assign(paste("h2.", i, ".NQTN.", j, ".Cor.power", sep=""), matrix(NA, nrow=nsnp, ncol=0))
+    assign(paste("h2.", i, ".NQTN.", j, ".Cor.fdr", sep=""), matrix(NA, nrow=nsnp, ncol=0))
+    
+    for(r in 1:rept){
+      mySim <- G2P(X=X1to5, h2=h2[i], alpha=1, NQTN=NQTN[j], distribution="normal")
+
+      ###GWAS by GLM
+      myGLM <- GWASapply(mySim$y,genotypes,CV,GM,PCA.M = 3,QTN.position=mySim$QTN.position)
+      GLM.power <- get(paste("h2.", i, ".NQTN.", j, ".GLM.power", sep=""))
+      GLM.power <- cbind(GLM.power, as.vector(myGLM$power.fdr.type1error$power))
+      
+      GLM.fdr <- get(paste("h2.", i, ".NQTN.", j, ".GLM.fdr", sep=""))
+      GLM.fdr <- cbind(GLM.fdr, myGLM$power.fdr.type1error$fdr)
+  
+      assign(paste("h2.", i, ".NQTN.", j, ".GLM.power", sep=""), GLM.power)
+      assign(paste("h2.", i, ".NQTN.", j, ".GLM.fdr", sep=""), GLM.fdr)
+      
+      ###GWASbyCor
+      myP <- GWASbyCor(genotypes, mySim$y)
+      order.SNP <- order(myP)
+      Cor.pwrfdr <- power.fdr(order.SNP, mySim$QTN.position)
+
+      Cor.power <- get(paste("h2.", i, ".NQTN.", j, ".Cor.power", sep=""))
+      Cor.power <- cbind(Cor.power, Cor.pwrfdr$power)
+      
+      Cor.fdr <- get(paste("h2.", i, ".NQTN.", j, ".Cor.fdr", sep=""))
+      Cor.fdr <- cbind(Cor.fdr, Cor.pwrfdr$fdr)
+      
+      assign(paste("h2.", i, ".NQTN.", j, ".Cor.power", sep=""), Cor.power)
+      assign(paste("h2.", i, ".NQTN.", j, ".Cor.fdr", sep=""), Cor.fdr)
+    }
+    
+  }
+}  
+par(mfrow=c(4, 3))
+for(i in 1:length(h2)){
+  for(j in 1:length(NQTN)){
+
+    GLM.power <- get(paste("h2.", i, ".NQTN.", j, ".GLM.power", sep=""))
+    GLM.fdr <- get(paste("h2.", i, ".NQTN.", j, ".GLM.fdr", sep=""))
+    GLM.Y <- rowMeans(GLM.power)
+    GLM.X <- rowMeans(GLM.fdr)
+    
+    Cor.power <- get(paste("h2.", i, ".NQTN.", j, ".Cor.power", sep=""))
+    Cor.fdr <- get(paste("h2.", i, ".NQTN.", j, ".Cor.fdr", sep=""))
+    Cor.Y <- rowMeans(Cor.power)
+    Cor.X <- rowMeans(Cor.fdr)
+    
+    plot(GLM.X, GLM.Y, type="b", pch=1, col="red", xlim=c(0,1), ylim=c(0,1), xlab="fdr", ylab="power", main=paste("h2=", h2[i], "  NQTN=", NQTN[j], sep=""))
+    lines(Cor.Y~Cor.X, type="b", pch=2, col="blue")
+    legend("topleft", c("GLM", "Cor"), col=c("red", "blue"), lty=1, pch=c(1, 2), cex=0.8, bty="n")
+  }
+}
+```
+
+
+```{r}
+source("http://www.zzlab.net/StaGen/2020/R/G2P.R")
+source("http://www.zzlab.net/StaGen/2020/R/GWASbyCor.R")
+NQTN = 10 #specify number of QTN
+h2 = 0.75 #heritability
+alpha = 0.6 #alpha value
+distribution = "normal" #specify distribution
+#set.seed(1337)
+#plotting
+  mySim=G2P(genotypes, h2, alpha, NQTN, distribution) #phenotype simulation
+  p= as.vector(GWASbyCor(X=genotypes,y=phenotypes_n_1))
+  p= GWASbyCor(X=genotypes,y=phenotypes_n_1)#GWAS by using the correlation methods
+  p=data.frame(p)
   pres=power.fdr(p, QTN.position=QTN.position,cutoff=NULL)
   manhattan_plot(GM,p,cutoff=NULL,QTN.position,FP=pres$FP.fdr.power,TP=pres$TP.fdr.power, trait = "unknown",messages=TRUE)
   qq_plot(GM,p,QTN.position, trait = "unknown")
+#Replicating  
+gcrep=replicate (30,{
+  mySim=G2P(genotypes, h2, alpha, NQTN, distribution) #phenotype simulation
+  p= as.vector(GWASbyCor(X=genotypes,y=phenotypes_n_1))
+  p= GWASbyCor(X=genotypes,y=phenotypes_n_1)#GWAS by using the correlation methods
+  p=data.frame(p)
+  pres=power.fdr(p, QTN.position=QTN.position,cutoff=NULL)
+  FalP=length(pres$FP.fdr.power)
+  TruP=length(pres$TP.fdr.power)
+  num_output=c()
+  num_output=c(FalP,TruP)
   })
+num_output=c()
+for(i in 1:30){
+  mySim=G2P(genotypes, h2, alpha, NQTN, distribution) #phenotype simulation
+  p= as.vector(GWASbyCor(X=genotypes,y=phenotypes_n_1))
+  p= GWASbyCor(X=genotypes,y=phenotypes_n_1)#GWAS by using the correlation methods
+  p=data.frame(p)
+  pres=power.fdr(p, QTN.position=QTN.position,cutoff=NULL)
+  FalP=length(pres$FP.fdr.power)
+  TruP=length(pres$TP.fdr.power)
+  num_output=rbind(num_output,FalP,TruP)
+  
+}
+
+View(gcrep)
+print(rowMeans(gcrep))
+# 5.16 (# QTN in top 10 p-value SNPs)  211.59 (# QTN with p-value lower than 7th highest)
+print(apply(gcrep,1,sd))
+num_output
+View(num_output)
+View(gcrep)
 means=mean(gcrep)
 stdevs=sd(gcrep)
 out4 <- rbind(means,stdevs)
@@ -130,12 +299,17 @@ QTN.position=sample(m,NQTN,replace=F)
 
 garep=replicate(30,{
   mySim=G2P(genotypes, h2, alpha, NQTN, distribution)
-  function(y=NULL, X=NULL, C=NULL, GM=NULL, PCA.M=3, QTN.position=NULL, cutoff=NULL,plots=FALSE,messages=FALSE,print=FALSE)
-  test_rep=GWASapply(phenotypes_n_1,genotypes,CV,GM,PCA.M = 3,QTN.position=QTN.position, plot=TRUE)
-  N_detected=length(test_rep$True.Positive)
-  N_output=c()
-  N_output=c(N_detected)
+  test_rep=GWASapply(phenotypes_n_1,genotypes,CV,GM,PCA.M = 3,QTN.position=QTN.position)
+  FalP=length(test_rep$False.Positive)
+  TruP=length(test_rep$True.Positive)
+  num_output=c()
+  num_output=c(FalP,TruP)
   })
+print(rowMeans(garep))
+# 5.16 (# QTN in top 10 p-value SNPs)  211.59 (# QTN with p-value lower than 7th highest)
+print(apply(garep,1,sd))
+
+
 means=mean(garep)
 stdevs=sd(garep)
 out5 <- rbind(means,stdevs)
@@ -191,3 +365,5 @@ perc_diff <- round((loop_elapsed - apply_elapsed) / loop_elapsed * 100,2)
 
 print(paste("Apply is ", perc_diff , "% faster!"))
 ```
+
+
