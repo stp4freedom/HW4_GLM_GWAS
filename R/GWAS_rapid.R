@@ -6,8 +6,6 @@ GWASapply_rapid<- function(pheno=NULL, geno=NULL, Cov=NULL, GM=NULL, PCA.M=3,cut
   y=pheno
   PCA=prcomp(GD)
   P=apply(GD,2, function(x)
-
-    #x=GD[,1]
     # CHECK FOR GENOTYPE DISTRIBUTION
     if(max(x)==min(x)){p=1
     P=p[length(p)]
@@ -50,16 +48,12 @@ GWASapply_rapid<- function(pheno=NULL, geno=NULL, Cov=NULL, GM=NULL, PCA.M=3,cut
     0.05/m,
     cutoff
   ))
-  #if(messages==TRUE){print(paste0("The final cuttoff for a significant p-value is ",as.character(cutoff.final)))}
   sig.SNP <- order.SNP[sort(P.value)<=cutoff.final]
   lsnp=length(sig.SNP)
-  #if(messages==TRUE){print(paste0(as.character(lsnp), " Significant SNPs were found"))}
-
   ###
   zeros=P==0
   P[zeros]=1e-20
   P=data.frame(P)
   GWAS.Results=list(P.value.res=P.value, cutoff.final.res=cutoff.final, sig.SNP.res=sig.SNP, sig.SNP.P.res=P.value[sig.SNP], order.SNP.res=order.SNP)
-  print(paste0("GWASapply ran successfully and took ",as.character(round(apply_elapsed[[1]],2))," seconds"))
   return(GWAS.Results)
 }
