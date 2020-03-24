@@ -80,7 +80,7 @@ library(devtools)
 Next using the code below download and install the package GWhEAT from Github. The bottom two line of code in the chunk below make sure the dependencies GWhEAT relies on are also downloaded and installed. 
 ```{r,warning=FALSE}
 #install package
-install_github("stp4freedom/HW4_GLM_GWAS", force =TRUE)
+#install_github("stp4freedom/HW4_GLM_GWAS", force =TRUE)
 library(GWAStest)#package name
 #Load dependencies 
 if (!require("pacman")) install.packages("pacman")
@@ -155,12 +155,14 @@ As sequencing data become more accessible and data sets become larger a necessit
 ```{r,warning=FALSE}
 Example3=GWASapply_rapid(pheno=phenotypes_n_1, geno=genotypes, Cov=CV, GM=GM, PCA.M = 3,cutoff=NULL)
 ```
+
 ###  **Rapid run options**
-After running GWASapply_rapid you can always create individual plots as shown below. This option gives you more flexibility over the output and can help for specific analyses. 
+
+After running GWASapply_rapid you can always create individual plots as shown below. The Manhatten and QQ-plot functions allow flexibility in designing your own output.  
 
 ```{r,warning=FALSE}
-manhattan_plot(GM,Example3$P.value.res, trait="ManhattenPlot_example",FP = Example3$False.Positive, TP = Example3$True.Positive)
-qq_plot(GM,Example3$P.value.res,QTN.position, trait = "qq_plot_example")
+manhattan_plot(GM,Example3$P.value.res, trait="ManhattenPlot_Example3",FP = Example3$False.Positive, TP = Example3$True.Positive)
+qq_plot(GM,Example3$P.value.res,QTN.position, trait = "qq_plot_Example3")
 ```
 
 
